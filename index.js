@@ -43,6 +43,7 @@ const loli = new lolis()
 const { removeBackgroundFromImageFile } = require('remove.bg')
 const { ind } = require('./bahasa')
 const { uploadimg } = require('./lib/uploadimg')
+const { convertSticker } = require('./plugins/swm.js')
 
 /********** MENU SETTING **********/
 const vcard = 'BEGIN:VCARD\n' 
@@ -358,34 +359,60 @@ client.connect();
 
 client.on('group-participants-update', async (anu) => {
 	if (!welkom.includes(anu.jid)) return
-		try {
-			const mdata = await client.groupMetadata(anu.jid)
+			try {
+            mem = anu.participants[0]
 			console.log(anu)
-			if (anu.action == 'add') {
-				num = anu.participants[0]
-				try {
-					ppimg = await client.getProfilePicture(`${anu.participants[0].split('@')[0]}@c.us`)
-				} catch {
-					ppimg = 'https://i0.wp.com/www.gambarunik.id/wp-content/uploads/2019/06/Top-Gambar-Foto-Profil-Kosong-Lucu-Tergokil-.jpg'
-				}
-				teks = `*Hallo* @${num.split('@')[0]}\nSelamat datang di group *${mdata.subject}*\nJangan rusuh ya\nJangan lupa intro @${num.split('@')[0]} 🗣`
-				let buff = await getBuffer(ppimg)
-				client.sendMessage(mdata.id, buff, MessageType.image, {quoted: {key : {participant : '0@s.whatsapp.net'}, message: {orderMessage: {itemCount : 1, status: 1, surface : 1, message: `Welcome Member\n${pushname}`, orderTitle: `Welcome Member\n${pushname}`, thumbnail: fs.readFileSync('me.jpg'), sellerJid: '0@s.whatsapp.net'} } }, contextInfo: {"mentionedJid": [num]}, caption: teks})
-				} else if (anu.action == 'remove') {
-				num = anu.participants[0]
-				try {
-					ppimg = await client.getProfilePicture(`${num.split('@')[0]}@c.us`)
-				} catch {
-					ppimg = 'https://i0.wp.com/www.gambarunik.id/wp-content/uploads/2019/06/Top-Gambar-Foto-Profil-Kosong-Lucu-Tergokil-.jpg'
-				}
-				teks = `*Kenapa Keluar Dari Grup* @${num.split('@')[0]}\n*Kyk Nya Sih Habis Di Omelin Sama Mamah Nya:V*`
-				let buff = await getBuffer(ppimg)
-				client.sendMessage(mdata.id, buff, MessageType.image, {quoted: {key : {participant : '0@s.whatsapp.net'}, message: {orderMessage: {itemCount : 1, status: 1, surface : 1, message: `Selamat Jalan:v\n${pushname}`, orderTitle: `Selamat Jalan:v\n${pushname}`, thumbnail: fs.readFileSync('me.jpg'), sellerJid: '0@s.whatsapp.net'} } }, contextInfo: {"mentionedJid": [num]}, caption: teks})
-			}
+            try {
+            pp_user = await client.getProfilePicture(mem)
+            } catch (e) {
+            pp_user = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png?q=60'
+            }
+            try {
+            pp_grup = await client.getProfilePicture(anu.jid)
+            } catch (e) {
+            pp_grup = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png?q=60'
+            }
+            if (anu.action == 'demote') {
+            mdata = await client.groupMetadata(anu.jid)
+            member = mdata.participants.length
+        	num = anu.participants[0]
+            anu_user = client.contacts[mem]
+            teks = `Selamat Untuk @${num.split('@')[0]}\nAnda Telah Turun Pangkat, Tadinya Admin Sekarang Member`
+	        bbuufff = await getBuffer(`http://hadi-api.herokuapp.com/api/card/demote?nama=${encodeURI(anu_user.notify)}&member=${member}&pesan=${encodeURI(anu_user.notify)} Turun Pangkat&pp=${pp_user}&bg=${pp_grup}`)
+		client.sendMessage(mdata.id, bbuufff, MessageType.image, {quoted: {key : {participant : '0@s.whatsapp.net'}, message: {orderMessage: {itemCount : 1, status: 1, surface : 1, message: `Selamat @${num.split('@')[0]}\nTurun Pangkat`, orderTitle: `Selamat @${num.split('@')[0]}\nTurun Pangkat`, thumbnail: fs.readFileSync('me.jpg'), sellerJid: '0@s.whatsapp.net'} } }, contextInfo: {"mentionedJid": [num]}, caption: teks})
+		}
+		if (anu.action == 'promote') {
+            mdata = await client.groupMetadata(anu.jid)
+            member = mdata.participants.length
+        	num = anu.participants[0]
+            anu_user = client.contacts[mem]
+            teks = `Selamat Kepada @${num.split('@')[0]}\nAnda Telah Naik Pangkat, Dari Member Menjadi Admin`
+	        bbuuufff = await getBuffer(`http://hadi-api.herokuapp.com/api/card/promote?nama=${encodeURIComponent(anu_user.notify)}&member=${member}&pesan=${encodeURIComponent(anu_user.notify)} Naik Pangkat&pp=${pp_user}&bg=${pp_grup}`)
+		client.sendMessage(mdata.id, bbuuufff, MessageType.image, {quoted: {key : {participant : '0@s.whatsapp.net'}, message: {orderMessage: {itemCount : 1, status: 1, surface : 1, message: `Selamat @${num.split('@')[0]}\nNaik Pangkat`, orderTitle: `Selamat @${num.split('@')[0]}\nNaik Pangkat`, thumbnail: fs.readFileSync('me.jpg'), sellerJid: '0@s.whatsapp.net'} } }, contextInfo: {"mentionedJid": [num]}, caption: teks})
+		}
+       if (anu.action == 'add') {
+            mdata = await client.groupMetadata(anu.jid)
+            member = mdata.participants.length
+        	num = anu.participants[0]
+            anu_user = client.contacts[mem]
+            teks = `*Hallo* @${num.split('@')[0]}\nSelamat datang di group *${mdata.subject}*\nJangan rusuh ya\nJangan lupa intro @${num.split('@')[0]} 🗣`
+	        bbbuuufff = await getBuffer(`http://hadi-api.herokuapp.com/api/card/welcome2?nama=${encodeURIComponent(anu_user.notify)}&descriminator=${member}&memcount=${member}&gcname=${encodeURIComponent(mdata.subject)}&gcicon=${pp_grup}&pp=${pp_user}&bg=${pp_grup}`)
+		client.sendMessage(mdata.id, bbbuuufff, MessageType.image, {quoted: {key : {participant : '0@s.whatsapp.net'}, message: {orderMessage: {itemCount : 1, status: 1, surface : 1, message: `Welcome @${num.split('@')[0]}\n${tampilTanggal}`, orderTitle: `Welcome @${num.split('@')[0]}\n${tampilTanggal}`, thumbnail: fs.readFileSync('me.jpg'), sellerJid: '0@s.whatsapp.net'} } }, contextInfo: {"mentionedJid": [num]}, caption: teks})
+		}
+            if (anu.action == 'remove') {
+                mdata = await client.groupMetadata(anu.jid)
+            	num = anu.participants[0]
+                anu_user = client.contacts[mem]
+                member = mdata.participants.length
+                teks = `*Kenapa Keluar Dari Grup* @${num.split('@')[0]}\n*Kyk Nya Sih Habis Di Omelin Sama Mamah Nya:V*`
+                bbbbuuuuffff = await getBuffer(`http://hadi-api.herokuapp.com/api/card/goodbye2?nama=${encodeURIComponent(anu_user.notify)}&descriminator=${member}&memcount=${member}&gcname=${encodeURIComponent(mdata.subject)}&gcicon=${pp_grup}&pp=${pp_user}&bg=${pp_grup}`)
+                client.sendMessage(mdata.id, bbbbuuuuffff, MessageType.image, {quoted: {key : {participant : '0@s.whatsapp.net'}, message: {orderMessage: {itemCount : 1, status: 1, surface : 1, message: `Keluar @${num.split('@')[0]}\n${tampilTanggal}`, orderTitle: `Keluar @${num.split('@')[0]}\n${tampilTanggal}`, thumbnail: fs.readFileSync('me.jpg'), sellerJid: '0@s.whatsapp.net'} } }, contextInfo: {"mentionedJid": [num]}, caption: teks})
+            }
 		} catch (e) {
-		console.log(e)
-	}
-	})
+			console.log('Error : %s', color(e, 'red'))
+      }
+
+    })
 	client.on('CB:Blocklist', json => {
 		if (blocked.length > 2) return
 	    for (let i of json[1].blocklist) {
@@ -1208,6 +1235,11 @@ function addMetadata(packname, author) {
       const loli = fs.readFileSync('./mp3/mksh.mp3')
       client.sendMessage(from, loli, MessageType.audio, {quoted: {key: { fromMe: false, participant: `0@s.whatsapp.net`, ...(from ? { remoteJid: "status@broadcast" } : {}) }, message: { "productMessage":{"product":{"productImage":{"mimetype":"image/jpeg","height":736,"width":736,"jpegThumbnail":fs.readFileSync(`./me.jpg`)},"productId":"3937202479680283","title":"Iyah Sama Dua:v","currencyCode":"IDR","priceAmount1000":"9999","productImageCount":1},"businessOwnerJid":"0@s.whatsapp.net"}}}, mimetype: 'audio/mp4', ptt:true, duration:999999999999})
       }
+      if (messagesC.includes('desah')){
+      client.updatePresence(from, Presence.composing)
+      const loli = fs.readFileSync('./mp3/desah.mp3')
+      client.sendMessage(from, loli, MessageType.audio, {quoted: {key: { fromMe: false, participant: `0@s.whatsapp.net`, ...(from ? { remoteJid: "status@broadcast" } : {}) }, message: { "productMessage":{"product":{"productImage":{"mimetype":"image/jpeg","height":736,"width":736,"jpegThumbnail":fs.readFileSync(`./me.jpg`)},"productId":"3937202479680283","title":"Iyah Sama Dua:v","currencyCode":"IDR","priceAmount1000":"9999","productImageCount":1},"businessOwnerJid":"0@s.whatsapp.net"}}}, mimetype: 'audio/mp4', ptt:true, duration:999999999999})
+      }
       if (messagesC.includes('sayang')){
       client.updatePresence(from, Presence.composing)
       const loli = fs.readFileSync('./mp3/katanyatemen.mp3')
@@ -1481,33 +1513,23 @@ break
             fs.unlinkSync(ran)
             })
             break
-		case 'colong':
 		case 'swm':
-		          if (!isRegistered) return client.sendMessage(from, `╭─「 *BELUM VERIFIKASI* 」\n${fxsx} ${pushname}\n${fxsx} Daftar Dulu Kak Dengan Cara\n${fxsx} ${prefix}daftar pinky|16\n╰──────────`,MessageType.text, { quoted: mek2, contextInfo: { forwardingScore: 508, isForwarded: true}, sendEphemeral: true, thumbnail: fs.readFileSync(`./me.jpg`, 'base64')})
-				if (!isQuotedSticker) return reply('Reply Stickernya!')
-                    if ((isMedia && !client.message.videoMessage || isQuotedSticker)) {
-                        const encmedia = isQuotedSticker ? JSON.parse(JSON.stringify(mek).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo : mek
-                        filePath = await client.downloadAndSaveMediaMessage(encmedia, filename = getRandom());
-                        file_name = getRandom(".webp")
-                        request({
-                            url: `http://api.lolhuman.xyz/api/convert/towebpauthor?apikey=${LolKey}`,
-                            method: 'POST',
-                            formData: {
-                                "img": fs.createReadStream(filePath),
-                                "package": 'MancaBot',
-                                "author": 'By NuyFaa'
-                            },
-                            encoding: "binary"
-                        }, function(error, response, body) {
-                            fs.unlinkSync(filePath)
-                            fs.writeFileSync(file_name, body, "binary")
-                            ini_buff = fs.readFileSync(file_name)
-                            client.sendMessage(from, ini_buff, sticker, { quoted: mek })
-                            fs.unlinkSync(file_name)
-                        });
+	    case 'stickerwm':
+					if (!isRegistered) return client.sendMessage(from, `╭─「 *BELUM VERIFIKASI* 」\n❏ ${pushname}\n❏ Daftar Dulu Kak Dengan Cara\n❏ ${prefix}daftar pinky|16\n╰──────────`,MessageType.text, { quoted: mek2, contextInfo: { forwardingScore: 508, isForwarded: true}, sendEphemeral: true, thumbnail: fs.readFileSync(`./me.jpg`, 'base64')})
+                    if (type === 'imageMessage' || isQuotedImage){
+                    var kls = body.slice(5)
+                    var pack = kls.split('|')[0]
+                    var author = kls.split('|')[1]
+                    const getbuff = isQuotedImage ? JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo : mek
+                    const dlfile = await client.downloadMediaMessage(getbuff)
+                    const bas64 = `data:image/jpeg;base64,${dlfile.toString('base64')}`
+                    var mantap = await convertSticker(bas64, `${author}`, `${pack}`)
+                    var imageBuffer = new Buffer.from(mantap, 'base64');
+                    client.sendMessage(from, imageBuffer, MessageType.sticker, {quoted: fgif})
                     } else {
-                        reply(`Kirim stiker dengan caption ${prefix + command} atau tag sticker yang sudah dikirim`)
+                    reply('Format Salah!')
                     }
+                    await limitAdd(sender)
                     break
 		case 'chat':
 				if (args.length < 1) return reply('Apa pesan nya?')
@@ -5489,6 +5511,8 @@ ${fxsx} ${prefix}premiumlist
 ${fxsx} ${prefix}banlist
 ${fxsx} ${prefix}blocklist
 ${fxsx} ${prefix}linkgc
+${fxsx} ${prefix}bukatime
+${fxsx} ${prefix}tutuptime
 ${fxsx} ${prefix}infogc
 ${fxsx} ${prefix}stag
 ${fxsx} ${prefix}mctag
@@ -5546,6 +5570,7 @@ ${fxsx} ${prefix}nickff
 
 ╭─「 *MAKER MENU* 」
 ${fxsx} ${prefix}sticker
+${fxsx} ${prefix}swm
 ${fxsx} ${prefix}ttp
 ${fxsx} ${prefix}attp
 ${fxsx} ${prefix}emottoimg
@@ -7338,11 +7363,6 @@ buffer = await getBuffer('https://raw.githubusercontent.com/alonecans/foto-manca
 							.on('end', function () {
 								console.log('Finish')
 								exec(`webpmux -set exif ${addMetadata(namo, ator)} ${ran} -o ${ran}`, async (error) => {
-									//if (error) {
-											// reply(ind.stikga())
-											// fs.unlinkSync(media)	
-											// fs.unlinkSync(ran)
-											// }
 									client.sendMessage(from, fs.readFileSync(ran), sticker, {quoted: ftroli, sendEphemeral: true, thumbnail: fs.readFileSync(`./me.jpg`, 'base64')})
 									fs.unlinkSync(media)	
 									fs.unlinkSync(ran)	
@@ -7370,11 +7390,6 @@ buffer = await getBuffer('https://raw.githubusercontent.com/alonecans/foto-manca
 							.on('end', function () {
 								console.log('Finish')
 								exec(`webpmux -set exif ${addMetadata(namo, ator)} ${ran} -o ${ran}`, async (error) => {
-									//if (error) {
-											// reply(ind.stikga())
-											// fs.unlinkSync(media)	
-											// fs.unlinkSync(ran)
-											// }
 									client.sendMessage(from, fs.readFileSync(ran), sticker, {quoted: ftroli, sendEphemeral: true, thumbnail: fs.readFileSync(`./me.jpg`, 'base64')})
 									fs.unlinkSync(media)
 									fs.unlinkSync(ran)
@@ -7387,8 +7402,84 @@ buffer = await getBuffer('https://raw.githubusercontent.com/alonecans/foto-manca
 						reply(`Kirim gambar dengan caption ${prefix}sticker atau tag gambar yang sudah dikirim`)
 					}
 					break
+		case 'ambil':
+					case 'colong':
+					if (!isRegistered) return client.sendMessage(from, `╭─「 *BELUM VERIFIKASI* 」\n❏ ${pushname}\n❏ Daftar Dulu Kak Dengan Cara\n❏ ${prefix}daftar pinky|16\n╰──────────`,MessageType.text, { quoted: mek2, contextInfo: { forwardingScore: 508, isForwarded: true}, sendEphemeral: true, thumbnail: fs.readFileSync(`./me.jpg`, 'base64')})
+					if ((isMedia && !mek.message.videoMessage || isQuotedSticker) && args.length == 0) {
+						const encmedia = isQuotedSticker ? JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo : mek
+						const media = await client.downloadAndSaveMediaMessage(encmedia)
+						ran = getRandom('.webp')
+						await ffmpeg(`./${media}`)
+							.input(media)
+							.on('start', function (cmd) {
+								console.log(`Started : ${cmd}`)
+							})
+							.on('error', function (err) {
+								console.log(`Error : ${err}`)
+								fs.unlinkSync(media)
+							})
+							.on('end', function () {
+								console.log('Finish')
+								exec(`webpmux -set exif ${addMetadata(namo, ator)} ${ran} -o ${ran}`, async (error) => {
+									client.sendMessage(from, fs.readFileSync(ran), sticker, { quoted: fgif })
+									fs.unlinkSync(media)	
+									fs.unlinkSync(ran)	
+								})
+							})
+							.addOutputOptions([`-vcodec`,`libwebp`,`-vf`,`scale='min(320,iw)':min'(320,ih)':force_original_aspect_ratio=decrease,fps=15, pad=320:320:-1:-1:color=white@0.0, split [a][b]; [a] palettegen=reserve_transparent=on:transparency_color=ffffff [p]; [b][p] paletteuse`])
+							.toFormat('webp')
+							.save(ran)
+					} else if ((isMedia && mek.message.videoMessage.seconds < 11 || isQuotedVideo && mek.message.extendedTextMessage.contextInfo.quotedMessage.videoMessage.seconds < 11) && args.length == 0) {
+						const encmedia = isQuotedVideo ? JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo : mek
+						const media = await client.downloadAndSaveMediaMessage(encmedia)
+						ran = getRandom('.webp')
+						await ffmpeg(`./${media}`)
+							.inputFormat(media.split('.')[1])
+							.on('start', function (cmd) {
+								console.log(`Started : ${cmd}`)
+							})
+							.on('error', function (err) {
+								console.log(`Error : ${err}`)
+								fs.unlinkSync(media)
+								tipe = media.endsWith('.mp4') ? 'video' : 'gif'
+								client.sendMessage(from, `Gagal, pada saat mengkonversi ${tipe} ke stiker`,MessageType.text, { quoted: mek2, contextInfo: { forwardingScore: 508, isForwarded: true}})
+							})
+							.on('end', function () {
+								console.log('Finish')
+								exec(`webpmux -set exif ${addMetadata(namo, ator)} ${ran} -o ${ran}`, async (error) => {
+									client.sendMessage(from, fs.readFileSync(ran), sticker, { quoted: fgif })
+									fs.unlinkSync(media)
+									fs.unlinkSync(ran)
+								})
+							})
+							.addOutputOptions([`-vcodec`,`libwebp`,`-vf`,`scale='min(320,iw)':min'(320,ih)':force_original_aspect_ratio=decrease,fps=15, pad=320:320:-1:-1:color=white@0.0, split [a][b]; [a] palettegen=reserve_transparent=on:transparency_color=ffffff [p]; [b][p] paletteuse`])
+							.toFormat('webp')
+							.save(ran)
+					} else if ((isMedia || isQuotedSticker) && args[0] == 'nobg') {
+						const encmedia = isQuotedSticker ? JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo : mek
+						const media = await client.downloadAndSaveMediaMessage(encmedia)
+						ranw = getRandom('.webp')
+						ranp = getRandom('.png')
+						keyrmbg = 'bcAvZyjYAjKkp1cmK8ZgQvWH'
+						await removeBackgroundFromImageFile({path: media, apiKey: keyrmbg, size: 'auto', type: 'auto', ranp}).then(res => {
+							fs.unlinkSync(media)
+							let buffer = Buffer.from(res.base64img, 'base64')
+							fs.writeFileSync(ranp, buffer, (err) => {
+								if (err) return client.sendMessage(from, 'Gagal, Terjadi kesalahan, silahkan coba beberapa saat lagi',MessageType.text, { quoted: mek2, contextInfo: { forwardingScore: 508, isForwarded: true}})
+							})
+							exec(`ffmpeg -i ${ranp} -vcodec libwebp -filter:v fps=fps=20 -lossless 1 -loop 0 -preset default -an -vsync 0 -s 512:512 ${ranw}`, (err) => {
+								fs.unlinkSync(ranp)
+								exec(`webpmux -set exif ${addMetadata(namo, ator)} ${ranw} -o ${ranw}`, async (error) => {
+									client.sendMessage(from, fs.readFileSync(ranw), sticker, { quoted: fgif })
+									fs.unlinkSync(ranw)
+								})
+							})
+						})
+					} else {
+						client.sendMessage(from, `reply sticker dengan caption ${prefix}colong`,MessageType.text, { quoted: mek2, contextInfo: { forwardingScore: 508, isForwarded: true}})
+					}
+					break
 		case 'ocr': 
-					
                  if (!isRegistered) return client.sendMessage(from, `╭─「 *BELUM VERIFIKASI* 」\n${fxsx} ${pushname}\n${fxsx} Daftar Dulu Kak Dengan Cara\n${fxsx} ${prefix}daftar pinky|16\n╰──────────`,MessageType.text, { quoted: mek2, contextInfo: { forwardingScore: 508, isForwarded: true}, sendEphemeral: true, thumbnail: fs.readFileSync(`./me.jpg`, 'base64')})
 				if (isBanned) return client.sendMessage(from, `Maaf ${pushname} kamu sudah terbenned!`,MessageType.text, { quoted: mek2, contextInfo: { forwardingScore: 508, isForwarded: true}, sendEphemeral: true, thumbnail: fs.readFileSync(`./me.jpg`, 'base64')})
 					if ((isMedia && !mek.message.videoMessage || isQuotedImage) && args.length == 0) {
@@ -7665,6 +7756,44 @@ buffer = await getBuffer('https://raw.githubusercontent.com/alonecans/foto-manca
 						client.groupSettingChange(from, GroupSettingChange.messageSend, true)
 					}
 					break      
+	     case 'tutuptime': 
+					if (!isGroup) return reply(ind.groupo())
+					if (!isGroupAdmins) return reply(ind.admin())
+					if (!isBotGroupAdmins) return reply(ind.badmin())
+              client.updatePresence(from, Presence.composing) 
+              if (args[1]=="detik") {var timer = args[0]+"000"
+				} else if (args[1]=="menit") {var timer = args[0]+"0000"
+				} else if (args[1]=="jam") {var timer = args[0]+"00000"
+				} else {return reply("*pilih:*\ndetik\nmenit\njam\n\n*contoh*\n10 detik")}
+				setTimeout( () => {
+					var nomor = mek.participant
+					const close = {
+					text: `*ᴛᴇᴘᴀᴛ ᴡᴀᴋᴛᴜ* ɢʀᴜᴘ ᴅɪᴛᴜᴛᴜᴘ ᴏʟᴇʜ ᴀᴅᴍɪɴ @${nomor.split("@s.whatsapp.net")[0]}\nꜱᴇᴋᴀʀᴀɴɢ *ʜᴀɴʏᴀ ᴀᴅᴍɪɴ* ʏᴀɴɢ ᴅᴀᴘᴀᴛ ᴍᴇɴɢɪʀɪᴍ ᴘᴇꜱᴀɴ`,
+					contextInfo: { mentionedJid: [nomor] }
+					}
+					client.groupSettingChange (from, GroupSettingChange.messageSend, true);
+					reply(close)
+				}, timer)
+				break
+				case 'bukatime': 
+					if (!isGroup) return reply(ind.groupo())
+					if (!isGroupAdmins) return reply(ind.admin())
+					if (!isBotGroupAdmins) return reply(ind.badmin())
+              client.updatePresence(from, Presence.composing) 
+              if (args[1]=="detik") {var timer = args[0]+"000"
+				} else if (args[1]=="menit") {var timer = args[0]+"0000"
+				} else if (args[1]=="jam") {var timer = args[0]+"00000"
+				} else {return reply("*pilih:*\ndetik\nmenit\njam\n\n*contoh*\n10 detik")}
+				setTimeout( () => {
+					var nomor = mek.participant
+					const open = {
+					text: `*ᴛᴇᴘᴀᴛ ᴡᴀᴋᴛᴜ* ɢʀᴜᴘ ᴅɪʙᴜᴋᴀ ᴏʟᴇʜ ᴀᴅᴍɪɴ @${nomor.split("@s.whatsapp.net")[0]}\nꜱᴇᴋᴀʀᴀɴɢ *ᴍᴇᴍʙᴇʀ* ᴅᴀᴘᴀᴛ ᴍᴇɴɢɪʀɪᴍ ᴘᴇꜱᴀɴ`,
+					contextInfo: { mentionedJid: [nomor] }
+					}
+					client.groupSettingChange (from, GroupSettingChange.messageSend, false);
+					reply(open)
+				}, timer)
+				break
 		 case 'infogc':
 				case 'groupinfo':
 				case 'infogrup':
@@ -7818,8 +7947,7 @@ buffer = await getBuffer('https://raw.githubusercontent.com/alonecans/foto-manca
 					reply(anu)
 					break
 		case 'simih':
-					if (!isGroup) return reply(ind.groupo())
-					if (!isGroupAdmins) return reply(ind.admin())
+					if (!isOwner) return client.sendMessage(from, 'Only Admin Bot',MessageType.text, { quoted: ftroli, contextInfo: { forwardingScore: 508, isForwarded: true}, sendEphemeral: true, thumbnail: fs.readFileSync(`./me.jpg`, 'base64')})
 					if (args.length < 1) return client.sendMessage(from, 'Mengaktifkan Ketik 1, Menonaktif Ketik 0',MessageType.text, { quoted: mek2, contextInfo: { forwardingScore: 508, isForwarded: true}, sendEphemeral: true, thumbnail: fs.readFileSync(`./me.jpg`, 'base64')})
 					if (Number(args[0]) === 1) {
 						if (isSimi) return client.sendMessage(from, '*Fitur simi sudah aktif sebelum nya*',MessageType.text, { quoted: mek2, contextInfo: { forwardingScore: 508, isForwarded: true}, sendEphemeral: true, thumbnail: fs.readFileSync(`./me.jpg`, 'base64')})
